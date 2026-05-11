@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sweet Bills — Login</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+</head>
+<body class="login-body">
+  <div class="login-bg">
+    <div class="bg-circle c1"></div>
+    <div class="bg-circle c2"></div>
+    <div class="bg-circle c3"></div>
+  </div>
+
+  <div class="login-wrapper">
+    <div class="login-card">
+      <div class="login-brand">
+        <div class="brand-icon">🎂</div>
+        <h1 class="brand-title">Sweet Bills</h1>
+        <p class="brand-subtitle">Cake Store Billing System</p>
+      </div>
+
+      <form class="login-form" id="loginForm">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <div class="input-wrap">
+            <span class="input-icon">👤</span>
+            <input type="text" id="username" placeholder="Enter your username" autocomplete="username" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password" required />
+            <button type="button" class="toggle-pw" id="togglePw">👁</button>
+          </div>
+        </div>
+
+        <div class="error-msg" id="errorMsg"></div>
+
+        <button type="submit" class="btn-login" id="loginBtn">
+          <span class="btn-text">Sign In</span>
+          <span class="btn-loader" style="display:none">●●●</span>
+        </button>
+      </form>
+
+      <div class="login-hint">
+        <p>Demo credentials:</p>
+        <code>admin / admin123</code> &nbsp;|&nbsp; <code>cashier / cash123</code>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/login.js"></script>
+</body>
+</html>

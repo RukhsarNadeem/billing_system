@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sweet Bills — Billing</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+</head>
+<body class="app-body">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span class="sidebar-icon">🎂</span>
+      <span class="sidebar-name">Sweet Bills</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/billing" class="nav-item active">🧾 New Bill</a>
+      <a href="/history" class="nav-item">📋 History</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="user-avatar">{{ user.name[0] }}</div>
+      <div class="user-info">
+        <div class="user-name">{{ user.name }}</div>
+        <div class="user-role">{{ user.role }}</div>
+      </div>
+      <button class="logout-btn" id="logoutBtn" title="Logout">⏻</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main-content">
+    <!-- Top Bar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <h2 class="page-title">New Bill</h2>
+        <div class="stats-mini" id="statsBar">
+          <span class="stat-chip">Today: <strong id="todayBills">—</strong> bills</span>
+          <span class="stat-chip">Revenue: <strong id="todayRevenue">—</strong></span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <span class="date-badge" id="currentDate"></span>
+      </div>
+    </header>
+
+    <!-- Billing Layout -->
+    <div class="billing-layout">
+
+      <!-- Left: Products -->
+      <section class="products-panel">
+        <div class="panel-header">
+          <input type="text" class="search-box" id="searchBox" placeholder="🔍  Search products…" />
+          <div class="category-tabs" id="categoryTabs"></div>
+        </div>
+        <div class="products-grid" id="productsGrid"></div>
+      </section>
+
+      <!-- Right: Cart + Bill -->
+      <section class="cart-panel">
+        <!-- Customer Info -->
+        <div class="card customer-card">
+          <h3 class="card-title">Customer Info</h3>
+          <div class="form-row">
+            <input type="text" id="customerName" placeholder="Customer name" class="field" />
+            <input type="text" id="customerPhone" placeholder="Phone number" class="field" />
+          </div>
+        </div>
+
+        <!-- Cart -->
+        <div class="card cart-card">
+          <div class="cart-header">
+            <h3 class="card-title">Cart</h3>
+            <button class="btn-clear" id="clearCart">Clear</button>
+          </div>
+          <div class="cart-items" id="cartItems">
+            <div class="cart-empty">No items yet — pick from the menu! 🍰</div>
+          </div>
+        </div>
+
+        <!-- Bill Summary -->
+        <div class="card summary-card">
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <span id="subtotal">Rs. 0</span>
+          </div>
+          <div class="summary-row discount-row">
+            <label for="discountInput">Discount (Rs.)</label>
+            <input type="number" id="discountInput" value="0" min="0" class="discount-input" />
+          </div>
+          <div class="summary-row">
+            <span>Tax (5%)</span>
+            <span id="taxAmt">Rs. 0</span>
+          </div>
+          <div class="summary-row total-row">
+            <span>Total</span>
+            <span id="totalAmt">Rs. 0</span>
+          </div>
+
+          <div class="payment-methods">
+            <label class="pm-label">Payment Method</label>
+            <div class="pm-options">
+              <button class="pm-btn active" data-method="Cash">💵 Cash</button>
+              <button class="pm-btn" data-method="Card">💳 Card</button>
+              <button class="pm-btn" data-method="Online">📱 Online</button>
+            </div>
+          </div>
+
+          <button class="btn-generate" id="generateBill">Generate Bill 🧾</button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Bill Modal -->
+  <div class="modal-overlay" id="billModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Bill Receipt</h3>
+        <button class="modal-close" id="closeModal">✕</button>
+      </div>
+      <div class="receipt" id="receiptContent"></div>
+      <div class="modal-actions">
+        <button class="btn-print" onclick="window.print()">🖨 Print</button>
+        <button class="btn-new" id="newBillBtn">+ New Bill</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/billing.js"></script>
+</body>
+</html>
