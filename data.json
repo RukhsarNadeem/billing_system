@@ -1,0 +1,283 @@
+{
+  "users": [
+    {
+      "username": "admin",
+      "password": "admin123",
+      "role": "admin",
+      "name": "Admin User"
+    },
+    {
+      "username": "cashier",
+      "password": "cash123",
+      "role": "cashier",
+      "name": "Jane Cashier"
+    }
+  ],
+  "products": [
+    {
+      "id": 1,
+      "name": "Chocolate Fudge Cake",
+      "category": "Cakes",
+      "price": 1200,
+      "unit": "slice",
+      "emoji": "🍫"
+    },
+    {
+      "id": 2,
+      "name": "Strawberry Cream Cake",
+      "category": "Cakes",
+      "price": 1100,
+      "unit": "slice",
+      "emoji": "🍓"
+    },
+    {
+      "id": 3,
+      "name": "Red Velvet Cake",
+      "category": "Cakes",
+      "price": 1300,
+      "unit": "slice",
+      "emoji": "❤️"
+    },
+    {
+      "id": 4,
+      "name": "Black Forest Cake",
+      "category": "Cakes",
+      "price": 1150,
+      "unit": "slice",
+      "emoji": "🌲"
+    },
+    {
+      "id": 5,
+      "name": "Vanilla Sponge Cake",
+      "category": "Cakes",
+      "price": 950,
+      "unit": "slice",
+      "emoji": "🍰"
+    },
+    {
+      "id": 6,
+      "name": "Lemon Drizzle Cake",
+      "category": "Cakes",
+      "price": 1000,
+      "unit": "slice",
+      "emoji": "🍋"
+    },
+    {
+      "id": 7,
+      "name": "Carrot Walnut Cake",
+      "category": "Cakes",
+      "price": 1050,
+      "unit": "slice",
+      "emoji": "🥕"
+    },
+    {
+      "id": 8,
+      "name": "Mango Mousse Cake",
+      "category": "Cakes",
+      "price": 1250,
+      "unit": "slice",
+      "emoji": "🥭"
+    },
+    {
+      "id": 9,
+      "name": "Croissant",
+      "category": "Pastries",
+      "price": 250,
+      "unit": "piece",
+      "emoji": "🥐"
+    },
+    {
+      "id": 10,
+      "name": "Éclair",
+      "category": "Pastries",
+      "price": 300,
+      "unit": "piece",
+      "emoji": "🍮"
+    },
+    {
+      "id": 11,
+      "name": "Apple Danish",
+      "category": "Pastries",
+      "price": 280,
+      "unit": "piece",
+      "emoji": "🍎"
+    },
+    {
+      "id": 12,
+      "name": "Cinnamon Roll",
+      "category": "Pastries",
+      "price": 320,
+      "unit": "piece",
+      "emoji": "🌀"
+    },
+    {
+      "id": 13,
+      "name": "Cream Puff",
+      "category": "Pastries",
+      "price": 350,
+      "unit": "piece",
+      "emoji": "☁️"
+    },
+    {
+      "id": 14,
+      "name": "Pain au Chocolat",
+      "category": "Pastries",
+      "price": 290,
+      "unit": "piece",
+      "emoji": "🍫"
+    },
+    {
+      "id": 15,
+      "name": "Chocolate Truffle",
+      "category": "Cupcakes",
+      "price": 380,
+      "unit": "piece",
+      "emoji": "🧁"
+    },
+    {
+      "id": 16,
+      "name": "Vanilla Sprinkle",
+      "category": "Cupcakes",
+      "price": 350,
+      "unit": "piece",
+      "emoji": "🎉"
+    },
+    {
+      "id": 17,
+      "name": "Strawberry Swirl",
+      "category": "Cupcakes",
+      "price": 360,
+      "unit": "piece",
+      "emoji": "🍓"
+    },
+    {
+      "id": 18,
+      "name": "Red Velvet Cupcake",
+      "category": "Cupcakes",
+      "price": 400,
+      "unit": "piece",
+      "emoji": "❤️"
+    },
+    {
+      "id": 19,
+      "name": "Blueberry Muffin",
+      "category": "Muffins",
+      "price": 220,
+      "unit": "piece",
+      "emoji": "🫐"
+    },
+    {
+      "id": 20,
+      "name": "Chocolate Chip Muffin",
+      "category": "Muffins",
+      "price": 230,
+      "unit": "piece",
+      "emoji": "🍪"
+    },
+    {
+      "id": 21,
+      "name": "Banana Nut Muffin",
+      "category": "Muffins",
+      "price": 210,
+      "unit": "piece",
+      "emoji": "🍌"
+    },
+    {
+      "id": 22,
+      "name": "Lemon Poppy Muffin",
+      "category": "Muffins",
+      "price": 225,
+      "unit": "piece",
+      "emoji": "🌼"
+    },
+    {
+      "id": 23,
+      "name": "Cookies & Cream",
+      "category": "Special",
+      "price": 1500,
+      "unit": "whole",
+      "emoji": "🍪"
+    },
+    {
+      "id": 24,
+      "name": "Birthday Cake (Custom)",
+      "category": "Special",
+      "price": 2500,
+      "unit": "whole",
+      "emoji": "🎂"
+    },
+    {
+      "id": 25,
+      "name": "Wedding Tier Cake",
+      "category": "Special",
+      "price": 5000,
+      "unit": "whole",
+      "emoji": "💍"
+    }
+  ],
+  "bills": [
+    {
+      "id": "BILL-0001",
+      "customer_name": "Walk-in Customer",
+      "customer_phone": "",
+      "items": [
+        {
+          "id": 11,
+          "name": "Apple Danish",
+          "emoji": "🍎",
+          "price": 280,
+          "qty": 1
+        },
+        {
+          "id": 13,
+          "name": "Cream Puff",
+          "emoji": "☁️",
+          "price": 350,
+          "qty": 1
+        }
+      ],
+      "subtotal": 630,
+      "discount": 0.0,
+      "tax": 31.5,
+      "total": 661.5,
+      "payment_method": "Cash",
+      "cashier": "Admin User",
+      "created_at": "2026-05-11 15:50:30"
+    },
+    {
+      "id": "BILL-0002",
+      "customer_name": "Rukhsar",
+      "customer_phone": "0312345678",
+      "items": [
+        {
+          "id": 1,
+          "name": "Chocolate Fudge Cake",
+          "emoji": "🍫",
+          "price": 1200,
+          "qty": 1
+        },
+        {
+          "id": 3,
+          "name": "Red Velvet Cake",
+          "emoji": "❤️",
+          "price": 1300,
+          "qty": 1
+        },
+        {
+          "id": 4,
+          "name": "Black Forest Cake",
+          "emoji": "🌲",
+          "price": 1150,
+          "qty": 1
+        }
+      ],
+      "subtotal": 3650,
+      "discount": 0.0,
+      "tax": 182.5,
+      "total": 3832.5,
+      "payment_method": "Online",
+      "cashier": "Admin User",
+      "created_at": "2026-05-11 15:51:12"
+    }
+  ]
+}
