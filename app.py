@@ -1,25 +1,92 @@
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 import json
 import os
+import pyodbc
 from datetime import datetime
 from functools import wraps
 
 app = Flask(__name__)
 app.secret_key = "cake_billing_secret_2024"
 
-# Always find data.json next to app.py, no matter where you run from
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_FILE = os.path.join(BASE_DIR, "data.json")
+# ─── Azure SQL Connection ────────────────────────────────────
+DB_PASSWORD = "Sw33tB!lls@Secure#2024"
 
-# ─── Helpers ────────────────────────────────────────────────
-def load_data():
-    with open(DATA_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
+CONNECTION_STRING = (
+    "Driver={ODBC Driver 18 for SQL Server};"
+    "Server=tcp:responseserver.database.windows.net,1433;"
+    "Database=database;"
+    "Uid=serveradmin;"
+    f"Pwd={DB_PASSWORD};"
+    "Encrypt=yes;"
+    "TrustServerCertificate=no;"
+    "Connection Timeout=30;"
+)
 
-def save_data(data):
-    with open(DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
+def get_db():
+    """Return a new database connection."""
+    return pyodbc.connect(CONNECTION_STRING)
 
+# ─── DB Setup — run once to create tables ───────────────────
+def init_db():
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='users' AND xtype='U')
+        CREATE TABLE users (
+            id INT IDENTITY PRIMARY KEY,
+            username NVARCHAR(100) UNIQUE NOT NULL,
+            password NVARCHAR(100) NOT NULL,
+            name NVARCHAR(200) NOT NULL,
+            role NVARCHAR(50) NOT NULL
+        )
+    """)
+
+    cursor.execute("""
+        IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='products' AND xtype='U')
+        CREATE TABLE products (
+            id INT IDENTITY PRIMARY KEY,
+            name NVARCHAR(200) NOT NULL,
+            category NVARCHAR(100) NOT NULL,
+            price FLOAT NOT NULL,
+            unit NVARCHAR(50),
+            emoji NVARCHAR(10)
+        )
+    """)
+
+    cursor.execute("""
+        IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='bills' AND xtype='U')
+        CREATE TABLE bills (
+            id NVARCHAR(20) PRIMARY KEY,
+            customer_name NVARCHAR(200),
+            customer_phone NVARCHAR(50),
+            items NVARCHAR(MAX),
+            subtotal FLOAT,
+            discount FLOAT,
+            tax FLOAT,
+            total FLOAT,
+            payment_method NVARCHAR(50),
+            cashier NVARCHAR(200),
+            created_at NVARCHAR(30)
+        )
+    """)
+
+    # Seed default users if not exists
+    cursor.execute("SELECT COUNT(*) FROM users WHERE username = 'admin'")
+    if cursor.fetchone()[0] == 0:
+        cursor.execute(
+            "INSERT INTO users (username, password, name, role) VALUES (?, ?, ?, ?)",
+            ("admin", "admin123", "Admin User", "admin")
+        )
+        cursor.execute(
+            "INSERT INTO users (username, password, name, role) VALUES (?, ?, ?, ?)",
+            ("cashier", "cash123", "Jane Cashier", "cashier")
+        )
+
+    conn.commit()
+    conn.close()
+
+# ─── Auth decorator ──────────────────────────────────────────
 def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -62,18 +129,17 @@ def api_login():
         if not username or not password:
             return jsonify({"success": False, "message": "Username and password are required"}), 400
 
-        data = load_data()
-        user = next(
-            (u for u in data["users"] if u["username"] == username and u["password"] == password),
-            None
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT username, name, role FROM users WHERE username = ? AND password = ?",
+            (username, password)
         )
+        row = cursor.fetchone()
+        conn.close()
 
-        if user:
-            session["user"] = {
-                "username": user["username"],
-                "name": user["name"],
-                "role": user["role"]
-            }
+        if row:
+            session["user"] = {"username": row[0], "name": row[1], "role": row[2]}
             return jsonify({"success": True, "redirect": "/billing"})
 
         return jsonify({"success": False, "message": "Invalid username or password"}), 401
@@ -90,31 +156,58 @@ def api_logout():
 @app.route("/api/products")
 @login_required
 def api_products():
-    data = load_data()
-    return jsonify(data["products"])
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, name, category, price, unit, emoji FROM products ORDER BY category, name")
+        rows = cursor.fetchall()
+        conn.close()
+        products = [
+            {"id": r[0], "name": r[1], "category": r[2], "price": r[3], "unit": r[4], "emoji": r[5]}
+            for r in rows
+        ]
+        return jsonify(products)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # ─── Bills API ───────────────────────────────────────────────
 @app.route("/api/bills", methods=["GET"])
 @login_required
 def api_get_bills():
-    data = load_data()
-    return jsonify(data["bills"])
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id, customer_name, customer_phone, items, subtotal,
+                   discount, tax, total, payment_method, cashier, created_at
+            FROM bills ORDER BY created_at DESC
+        """)
+        rows = cursor.fetchall()
+        conn.close()
+        bills = []
+        for r in rows:
+            bills.append({
+                "id": r[0], "customer_name": r[1], "customer_phone": r[2],
+                "items": json.loads(r[3]),
+                "subtotal": r[4], "discount": r[5], "tax": r[6], "total": r[7],
+                "payment_method": r[8], "cashier": r[9], "created_at": r[10]
+            })
+        return jsonify(bills)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/api/bills", methods=["POST"])
 @login_required
 def api_create_bill():
     try:
         body = request.get_json(force=True, silent=True) or {}
-        data = load_data()
+        conn = get_db()
+        cursor = conn.cursor()
 
-        existing_nums = []
-        for b in data["bills"]:
-            try:
-                existing_nums.append(int(b["id"].split("-")[1]))
-            except Exception:
-                pass
-        next_num = (max(existing_nums) + 1) if existing_nums else 1
-        bill_id = f"BILL-{next_num:04d}"
+        # Generate next bill ID
+        cursor.execute("SELECT COUNT(*) FROM bills")
+        count = cursor.fetchone()[0]
+        bill_id = f"BILL-{(count + 1):04d}"
 
         items = body.get("items", [])
         subtotal = sum(i["price"] * i["qty"] for i in items)
@@ -137,8 +230,17 @@ def api_create_bill():
             "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
 
-        data["bills"].append(bill)
-        save_data(data)
+        cursor.execute(
+            """INSERT INTO bills
+               (id, customer_name, customer_phone, items, subtotal, discount, tax, total, payment_method, cashier, created_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (bill["id"], bill["customer_name"], bill["customer_phone"],
+             json.dumps(bill["items"]), bill["subtotal"], bill["discount"],
+             bill["tax"], bill["total"], bill["payment_method"],
+             bill["cashier"], bill["created_at"])
+        )
+        conn.commit()
+        conn.close()
         return jsonify({"success": True, "bill": bill})
 
     except Exception as e:
@@ -147,26 +249,60 @@ def api_create_bill():
 @app.route("/api/bills/<bill_id>", methods=["GET"])
 @login_required
 def api_get_bill(bill_id):
-    data = load_data()
-    bill = next((b for b in data["bills"] if b["id"] == bill_id), None)
-    if bill:
-        return jsonify(bill)
-    return jsonify({"error": "Bill not found"}), 404
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute(
+            """SELECT id, customer_name, customer_phone, items, subtotal,
+                      discount, tax, total, payment_method, cashier, created_at
+               FROM bills WHERE id = ?""",
+            (bill_id,)
+        )
+        r = cursor.fetchone()
+        conn.close()
+        if r:
+            return jsonify({
+                "id": r[0], "customer_name": r[1], "customer_phone": r[2],
+                "items": json.loads(r[3]),
+                "subtotal": r[4], "discount": r[5], "tax": r[6], "total": r[7],
+                "payment_method": r[8], "cashier": r[9], "created_at": r[10]
+            })
+        return jsonify({"error": "Bill not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/api/summary")
 @login_required
 def api_summary():
-    data = load_data()
-    bills = data["bills"]
-    today = datetime.now().strftime("%Y-%m-%d")
-    today_bills = [b for b in bills if b["created_at"].startswith(today)]
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+        today = datetime.now().strftime("%Y-%m-%d")
 
-    return jsonify({
-        "total_bills": len(bills),
-        "today_bills": len(today_bills),
-        "today_revenue": round(sum(b["total"] for b in today_bills), 2),
-        "total_revenue": round(sum(b["total"] for b in bills), 2)
-    })
+        cursor.execute("SELECT COUNT(*) FROM bills")
+        total_bills = cursor.fetchone()[0]
+
+        cursor.execute(
+            "SELECT COUNT(*), ISNULL(SUM(total), 0) FROM bills WHERE created_at LIKE ?",
+            (today + "%",)
+        )
+        row = cursor.fetchone()
+        today_bills = row[0]
+        today_revenue = round(float(row[1]), 2)
+
+        cursor.execute("SELECT ISNULL(SUM(total), 0) FROM bills")
+        total_revenue = round(float(cursor.fetchone()[0]), 2)
+
+        conn.close()
+        return jsonify({
+            "total_bills": total_bills,
+            "today_bills": today_bills,
+            "today_revenue": today_revenue,
+            "total_revenue": total_revenue
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
+    init_db()   # Creates tables automatically on first run
     app.run(debug=True, port=5000)
